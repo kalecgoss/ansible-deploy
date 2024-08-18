@@ -1,0 +1,21 @@
+ansible_user: administrator
+ansible_connection: "ssh"
+ansible_shell_type: "powershell"
+
+soft_dir: '{{ ansible_user_dir }}\Downloads'
+vnc_install_path: C:\Program Files\RealVNC\VNC Server
+realvnc_exe_file: C:\Program Files\RealVNC\VNC Server\vncserver.exe
+
+vault_software_chocolatey_source_username: "api"
+vault_software_chocolatey_source_password: "36943582534fd6b460552406263fda1e0e4d801c"
+
+software:
+  chocolatey:
+    choco_name: "chocolatey"
+    source: "https://proget.netsrv.pw:38443/nuget/chocolatey.org/"
+    source_username: "{{vault_software_chocolatey_source_username}}"
+    source_password: '{{vault_software_chocolatey_source_password}}'
+    install_source_url: "https://proget.netsrv.pw:38443/endpoints/public/content/ChocolateyInstall.ps1"
+
+vnc_password: addonpopop111
+ansible_password: "!1R#6J@s@ejK3ub6i"

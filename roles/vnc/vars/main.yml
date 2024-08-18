@@ -1,0 +1,5 @@
+---
+
+soft_dir: '{{ ansible_user_dir }}\Downloads'
+vnc_install_path: C:\Program Files\RealVNC\VNC Server
+realvnc_exe_file: C:\Program Files\RealVNC\VNC Server\vncserver.exe

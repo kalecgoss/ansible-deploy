@@ -1,0 +1,6 @@
+---
+
+- name: Restart OpenSSH to apply config changes
+  ansible.windows.win_service:
+    name: sshd
+    state: restarted

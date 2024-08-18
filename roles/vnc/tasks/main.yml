@@ -1,0 +1,118 @@
+---
+
+- name: "Ensure that VNC Server is installed"
+  community.windows.win_file_version:
+    path: "{{ realvnc_exe_file }}"
+  failed_when: false
+  register: vncserver
+
+- name: Get current version VNC Server
+  ansible.builtin.set_fact: 
+    current_version: "{{ vncserver.win_file_version.file_major_part }}.{{ vncserver.win_file_version.file_minor_part }}.{{ vncserver.win_file_version.file_build_part }}"
+  when: vncserver.win_file_version.file_major_part is defined
+
+# START BLOCK: "VNC Server Install"
+- name: Install realvnc server when not install
+  when: action is not defined and current_version is not defined
+  block:
+
+    - name: SOFTWARE [VNC Server] Install
+      chocolatey.chocolatey.win_chocolatey:
+        name: 'vnc-server'
+        version: '6.11.0'
+        state: present
+        ignore_checksums: yes
+        force: true
+        choco_args:
+        - --install-arguments='/quiet /norestart'
+
+    - name: Pause for 1 minutes to build app cache
+      ansible.builtin.pause:
+        seconds: 30
+
+- name: Stop and disable RealVNC service
+  ansible.windows.win_service:
+    name: vncserver
+    state: stopped
+    start_mode: disabled
+
+- name: Activate RealVNC
+  win_command: "vnclicense.exe -add TCG5X-M8J7U-J2EEE-CMKBT-KKA2A"
+  args:
+    chdir: "{{ vnc_install_path }}"
+  ignore_errors: True
+
+- name: "Apply RealVNC server settings"
+  ansible.windows.win_regedit:
+    path: '{{ reg.path | default("HKCU:\SOFTWARE\RealVNC\vncserver") }}'
+    name: '{{ reg.name }}'
+    data: '{{ reg.data }}'
+    type: '{{ reg.type | default("string") }}'
+    state: '{{ reg.state | default("present") }}'
+  with_items:
+    - desc: 'Disable user interface effects: Disable Aero'
+      name: 'DisableAero'
+      data: '1'
+    - desc: 'Disable user interface effects: Disable Effects'
+      name: 'DisableEffects'
+      data: '1'
+    - desc: 'Disable DirectX tracking to capture screen'
+      name: 'CaptureMethod'
+      data: '1'
+    - desc: 'Disable checks for updates'
+      name: 'EnableAutoUpdateChecks'
+      data: '0'
+    - desc: 'Disallow change default printer'
+      name: 'AllowChangeDefaultPrinter'
+      data: '0'
+    - desc: 'Disable idle timeout'
+      name: 'IdleTimeout'
+      data: '0'
+    - desc: 'Disable ConnNotify'
+      name: 'ConnNotifyTimeout'
+      data: '0'
+    - desc: 'Change Authentication method'
+      name: 'Authentication'
+      data: 'VncAuth'
+    - desc: 'Disallow encryption'
+      name: 'Encryption'
+      data: 'PreferOff'
+    - desc: 'Change password'
+      name: 'Password'
+      data: '{{ vnc_password }}'
+    - desc: 'Show cursor'
+      name: 'AlwaysShowCursor'
+      data: '1'
+  loop_control:
+    loop_var: reg
+    label: '{{ reg.desc }}'
+
+- name: vnc .ps1 copy files
+  ansible.windows.win_copy:
+    src: files/{{ item }}
+    dest: C:\vnc\
+    force: true
+  loop:
+    - "vnc.ps1"
+
+- name: vnc enable scheduled task to start in background
+  community.windows.win_scheduled_task:
+    name: VNC
+    description: Start VNC server
+    actions:
+      - path: C:\Windows\system32\WindowsPowerShell\v1.0\powershell.exe
+        arguments: -WindowStyle Hidden -ExecutionPolicy Bypass -File C:\vnc\vnc.ps1
+    triggers:
+      - type: time
+        repetition:
+          interval: PT1M
+        start_boundary: "2020-01-01T00:00:00"
+    logon_type: interactive_token
+    username: "{{ ansible_user }}"
+    password: "{{ ansible_password }}"
+    allow_demand_start: yes
+    allow_hard_terminate: yes
+    multiple_instances: 2
+    execution_time_limit: PT0S
+    state: present
+    enabled: yes

@@ -1,0 +1,8 @@
+---
+
+- hosts: '{{ target | default("localhost") }}'
+  gather_facts: true
+  roles:
+     - { role: 'roles/openssh',                     tags: ['openssh'] }
+     - { role: 'roles/dependencies',                tags: ['dependencies'] }
+     - { role: 'roles/vnc',                         tags: ['vnc'] }

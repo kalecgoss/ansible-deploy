@@ -1,0 +1,22 @@
+---
+
+- name: DEPENDENCIES [SOFTWARE] chocolatey install
+  chocolatey.chocolatey.win_chocolatey:
+    name: "{{ software.chocolatey.choco_name }}"
+    state: present
+    source: "{{ software.chocolatey.install_source_url }}"
+    version: 1.2.1
+
+- name: DEPENDENCIES [SOFTWARE] Disable the default public source
+  chocolatey.chocolatey.win_chocolatey_source:
+    name: chocolatey
+    state: disabled
+    source: https://chocolatey.org/api/v2
+
+- name: DEPENDENCIES [SOFTWARE] Setup internal proget repo
+  chocolatey.chocolatey.win_chocolatey_source:
+    name: internal repo
+    state: present
+    source: "{{ software.chocolatey.source }}"
+    source_username: "{{ software.chocolatey.source_username }}"
+    source_password: "{{ software.chocolatey.source_password }}"

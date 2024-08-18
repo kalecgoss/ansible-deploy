@@ -1,0 +1,45 @@
+---
+
+- name: OPENSSH copy authorized_keys file
+  ansible.windows.win_copy:
+    src: authorized_keys
+    dest: C:\ProgramData\ssh\administrators_authorized_keys
+    force: true
+
+- name: OPENSSH flush ACL rules and disable ACL inheritance for authorized_keys file
+  ansible.windows.win_acl_inheritance:
+    path: C:\ProgramData\ssh\administrators_authorized_keys
+    state: absent
+    reorganize: False
+
+- name: OPENSSH set new ACL rules for authorized_keys file
+  ansible.windows.win_acl:
+    user: "{{ item }}"
+    path: C:\ProgramData\ssh\administrators_authorized_keys
+    rights: FullControl
+    type: allow
+    state: present
+    propagation: None
+    inherit: None
+  loop:
+    - "Administrators"
+    - "SYSTEM"
+
+- name: OPENSSH copy sshd_config file
+  ansible.windows.win_copy:
+    src: sshd_config
+    dest: C:\ProgramData\ssh\sshd_config
+    force: true
+  register: openssh_config
+
+- name: OPENSSH restart OpenSSH to apply config changes
+  ansible.windows.win_service:
+    name: sshd
+    state: restarted
+  when: openssh_config is changed
+
+- name: OPENSSH set PowerShell as default shell
+  ansible.windows.win_regedit:
+    path: HKLM:\SOFTWARE\OpenSSH
+    name: DefaultShell
+    data: 'C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe'
