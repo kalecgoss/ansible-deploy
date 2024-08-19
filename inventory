@@ -1,5 +1,5 @@
 [stage_server]
-stage-server ansible_host=212.41.7.181
+A000 ansible_host=212.41.7.181
 
 [main_server]
-zion_1 ansible_host=178.63.73.61
+A001 ansible_host=178.63.73.61

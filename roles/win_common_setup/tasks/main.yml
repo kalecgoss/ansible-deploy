@@ -1,0 +1,12 @@
+---
+- name: "[Win Update]: Disable Windows update settings"
+  ansible.builtin.import_tasks: disable_win_update.yml
+  tags: disable_win_update
+
+- name: "[Base]: Configure base system settings"
+  ansible.builtin.import_tasks: base_win_settings.yml
+  tags: base_win_settings
+
+- name: "[Rename]: Rename Host"
+  ansible.builtin.import_tasks: rename_host.yml
+  tags: rename_host

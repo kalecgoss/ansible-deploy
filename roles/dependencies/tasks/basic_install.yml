@@ -1,0 +1,51 @@
+---
+
+- name: DEPENDENCIES [BASIC_INSTALL] disable Windows Defender
+  ansible.windows.win_shell: Set-MpPreference -DisableRealtimeMonitoring:$true
+
+- name: DEPENDENCIES [BASIC_INSTALL] create PowerShell profile
+  ansible.windows.win_template:
+    src: templates/Microsoft.PowerShell_profile.ps1
+    dest: C:\Windows\System32\WindowsPowerShell\v1.0\Microsoft.PowerShell_profile.ps1
+    force: true
+
+- name: DEPENDENCIES [BASIC_INSTALL] Set PowerShell font size to 20
+  win_regedit:
+    path: HKCU:\Console
+    name: FontSize
+    data: 2097152 # Это значение соответствует 20 в шестнадцатеричном формате, с учетом высоты и ширины
+    type: dword
+
+- name: DEPENDENCIES [BASIC_INSTALL] Show hidden files and folders
+  win_regedit:
+    path: HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced
+    name: Hidden
+    data: 1
+    type: dword
+  register: hidden_files
+
+- name: DEPENDENCIES [BASIC_INSTALL] Show file extensions
+  win_regedit:
+    path: HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced
+    name: HideFileExt
+    data: 0
+    type: dword
+  register: files_ext
+
+- name: DEPENDENCIES [BASIC_INSTALL] add custom values to PATH variable
+  ansible.windows.win_path:
+    elements:
+      - 'C:\ProgramData\chocolatey\bin'
+    state: present
+  register: edit_path_env
+
+- block:
+    - name: DEPENDENCIES [BASIC_INSTALL] restart Explorer to apply PATH changes in GUI
+      ansible.windows.win_shell: Get-Process | ?{$_.Name -eq "Explorer"} | Stop-Process -Force
+
+    - name: DEPENDENCIES [BASIC_INSTALL] restart sshd to apply PATH changes in console sessions
+      ansible.windows.win_service:
+        name: sshd
+        state: restarted
+  when: edit_path_env.changed or hidden_files.changed or files_ext.changed
+

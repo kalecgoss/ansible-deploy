@@ -1,0 +1,22 @@
+---
+
+- name: Get current Computer Name
+  ansible.windows.win_shell: (Get-WmiObject -Class Win32_ComputerSystem).Name
+  register: current_computer_name
+
+- name: Change the computer name in the registry
+  ansible.windows.win_shell: |
+    Set-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\ComputerName\ComputerName' -Name ComputerName -Value "{{ inventory_hostname }}"
+    Set-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\ComputerName\ActiveComputerName' -Name ComputerName -Value "{{ inventory_hostname }}"
+    Set-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters' -Name 'NV Hostname' -Value "{{ inventory_hostname }}"
+  when: current_computer_name.stdout_lines[0] != inventory_hostname
+
+
+
+- name: Reboot
+  ansible.windows.win_reboot:
+  when: current_computer_name.stdout_lines[0] != inventory_hostname
+
+ 
+
+    

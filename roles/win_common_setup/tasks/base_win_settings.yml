@@ -1,0 +1,25 @@
+---
+- name: "[Base]: Disable Hibernate Mode and Сhange power plan to high performance"
+  ansible.windows.win_shell: |
+    powercfg -h off
+    powercfg -setactive 8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c
+    powercfg -change -standby-timeout-ac 0
+    powercfg -change -monitor-timeout-ac 0
+    powercfg -change -disk-timeout-ac 0
+  changed_when: false
+
+- name: "[Base]: Disable IPv6 of all the Interface"
+  community.windows.win_net_adapter_feature:
+    interface: "*"
+    state: disabled
+    component_id:
+      - ms_tcpip6
+  tags: disable_ipv6
+
+- name: "[Base]: Disable UAC via regedit"
+  ansible.windows.win_regedit:
+    path: HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System
+    name: EnableLUA
+    data: 0
+    type: dword
+  register: uac
