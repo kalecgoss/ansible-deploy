@@ -1,0 +1,56 @@
+---
+
+- name: LDPLAYER [INSTALL] create download dir
+  ansible.windows.win_file:
+    path: "C:\\Users\\{{ ansible_user }}\\Downloads\\ldplayer\\{{ software.ldplayer.version }}"
+    state: directory
+
+# - name: LDPLAYER [INSTALL] download LDPlayer install files
+#   ansible.windows.win_shell: 'Invoke-WebRequest {{ proget_address }}/endpoints/emulator_images/content/ldplayer/{{ software.ldplayer.version }}/LDPlayer_{{ software.ldplayer.version }}.1.exe -Headers @{"AUTHORIZATION"="Basic " + [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes("{{ proget_creds }}"))} -OutFile C:\Users\{{ ansible_user }}\Downloads\ldplayer\{{ software.ldplayer.version }}\LDPlayer_{{ software.ldplayer.version }}.exe'
+
+# - name: LDPLAYER [INSTALL] download LDPlayer debug install files
+#   ansible.windows.win_shell: 'Invoke-WebRequest {{ proget_address }}/endpoints/emulator_images/content/ldplayer/{{ software.ldplayer.version }}/ldplayer_setup_english_{{ software.ldplayer.version }}_debug.exe -Headers @{"AUTHORIZATION"="Basic " + [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes("{{ proget_creds }}"))} -OutFile C:\Users\{{ ansible_user }}\Downloads\ldplayer\{{ software.ldplayer.version }}\ldplayer_setup_english_{{ software.ldplayer.version }}_debug.exe'
+
+# - name: LDPLAYER [INSTALL] create scheduled task for installation
+#   community.windows.win_scheduled_task:
+#     name: LDPlayer-install
+#     description: LDPlayer-install
+#     actions:
+#       - path: C:\Users\{{ ansible_user }}\Downloads\ldplayer\{{ software.ldplayer.version }}\{{ software.ldplayer.helper_file }}
+#         arguments: C:\Users\{{ ansible_user }}\Downloads\ldplayer\{{ software.ldplayer.version }}\{{ software.ldplayer.installer_file }} {{ ansible_user }}
+#     logon_type: interactive_token
+#     username: "{{ ansible_user }}"
+#     state: present
+#     enabled: yes
+
+
+# - name: LDPLAYER [INSTALL] start LDPlayer install
+#   ansible.windows.win_shell: schtasks /run /tn "LDPlayer-install"
+
+# - name: LDPLAYER [INSTALL] wait until the installation is finished
+#   community.windows.win_wait_for_process:
+#     process_name_exact: "{{ software.ldplayer.helper_file | replace('.exe','') }}"
+#     state: absent
+#     timeout: 600
+
+# - name: LDPLAYER [INSTALL] kill all LDPlayer porecess
+#   ansible.windows.win_shell: Get-Process {{ item }} | Stop-Process -Force
+#   loop:
+#     - "dnplayer*"
+#     - "ldplay*"
+
+# - name: LDPLAYER [INSTALL] delete scheduled task for installation
+#   community.windows.win_scheduled_task:
+#     name: LDPlayer-install
+#     state: absent
+
+# - name: LDPLAYER [INSTALL] remove LDPlayer installation file
+#   ansible.windows.win_file:
+#     path: 'C:\Users\{{ ansible_user }}\Downloads\ldplayer\{{ software.ldplayer.version }}'
+#     state: absent
+
+- ansible.builtin.include_tasks: ldplayer_settings.yml
+
+- name: LDPLAYER [CREATE EMULATORS] create emulators
+  ansible.builtin.include_tasks: create_emulators.yml
+  loop: "{{ range(1,(slots_count_max|int)+1) }}"

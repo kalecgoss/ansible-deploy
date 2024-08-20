@@ -11,9 +11,16 @@ realvnc_exe_file: C:\Program Files\RealVNC\VNC Server\vncserver.exe
 
 vault_software_chocolatey_source_username: "api"
 vault_software_chocolatey_source_password: "36943582534fd6b460552406263fda1e0e4d801c"
+proget_creds: "api:b3be62dd52c5d139a2efe427c340dec0b3cb07c5"
 
 remote_control_password: "N7SrUDtwyvJfbYt53UE6"
 remote_control: "AnyDesk"
+
+proget_address: https://proget.netsrv.pw:38443
+
+
+ldplayer_installer_file: 'LDPlayer_9.0.61.1.exe'
+ldplayer_helper_file: 'ldplayer_setup_english_9.0.61_debug.exe'
 
 software:
   chocolatey:
@@ -22,3 +29,31 @@ software:
     source_username: "{{vault_software_chocolatey_source_username}}"
     source_password: '{{vault_software_chocolatey_source_password}}'
     install_source_url: "https://proget.netsrv.pw:38443/endpoints/public/content/ChocolateyInstall.ps1"
+  ldplayer:
+    installation_path: "{{ ldplayer9_path }}"
+    version: "{{ ldplayer9_version }}"
+    installer_file: "{{ ldplayer_installer_file }}"
+    helper_file: "{{ ldplayer_helper_file }}"
+    exec_timeout: "180"
+
+ldplayer9_version: '9.0.61'
+ldplayer9_vbox_dir: 'ldplayer9box'
+ldplayer9_path: 'C:\LDPlayer\LDPlayer9'
+ldplayer9_helper_file: 'ldplayer_setup_english_9.0.61_debug.exe'
+ldplayer9_installer_file: 'LDPlayer_9.0.61.exe'
+ldplayer9_installer_version: '1.0.5'
+ldplayer9_bridge: 'true'
+ldplayer9_cpu: 2
+ldplayer9_memory: 2048
+ldplayer9_resolution: '720,1280,320'
+ldplayer9_fps: 10
+ldplayer9_language: en_US
+ldplayer9_smr_path: 'C:\XuanZhi\LDPlayer'
+ldplayer9_disable_updates: 'true'
+slots_count_max: 20
+
+nzt_apk_version: '2023.9.25'
+nzt_hp_version: '2.1.74'
+nzt_wep_version: '5.7.1810'
+
+iplocation_service: 'ipwho.is'

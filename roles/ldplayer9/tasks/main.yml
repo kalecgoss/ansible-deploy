@@ -1,0 +1,13 @@
+---
+
+# install
+- ansible.builtin.include_tasks: install.yml
+  when: action is not defined or action == "install"
+
+# uninstall
+- ansible.builtin.include_tasks: uninstall.yml
+  when: action is defined and action == "uninstall"
+
+# rotation
+- ansible.builtin.include_tasks: rotation.yml
+  when: action is defined and action == "rotation"

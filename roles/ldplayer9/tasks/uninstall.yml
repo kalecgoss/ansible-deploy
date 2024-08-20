@@ -1,0 +1,15 @@
+---
+
+- name: LDPLAYER [UNINSTALL] copy LDPlayer uninstall script to target
+  ansible.windows.win_template:
+    src: uninstall_ldplayer.ps1
+    dest: C:\uninstall_ldplayer.ps1
+    force: true
+
+- name: LDPLAYER [UNINSTALL] start LDPlayer uninstall
+  ansible.windows.win_shell: C:\uninstall_ldplayer.ps1
+
+- name: LDPLAYER [UNINSTALL] delete LDPlayer uninstall script
+  ansible.windows.win_file:
+    path: C:\uninstall_ldplayer.ps1
+    state: absent
