@@ -3,3 +3,4 @@ A000 ansible_host=212.41.7.181
 
 [main_server]
 A001 ansible_host=178.63.73.61
+A002 ansible_host=88.99.165.184

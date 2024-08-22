@@ -1,0 +1,7 @@
+---
+
+# first bootstrap stuff
+- ansible.builtin.include_tasks: basic_install.yml
+
+# create restore session task, set up desktop session
+- ansible.builtin.include_tasks: desktop_session.yml

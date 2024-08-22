@@ -1,0 +1,58 @@
+---
+
+- name: DEPENDENCIES [DESKTOP-SESSION] RDP disable unknown publisher warning
+  ansible.windows.win_regedit:
+    path: HKCU:\SOFTWARE\Microsoft\Terminal Server Client
+    name: AuthenticationLevelOverride
+    data: 0
+    type: dword
+  vars:
+    ansible_become: yes # add data to SYSTEM's HKCU hive
+
+- name: DEPENDENCIES [DESKTOP-SESSION] RDP disable unknown peer cert issuer
+  ansible.windows.win_regedit:
+    path: HKCU:\SOFTWARE\Microsoft\Terminal Server Client\LocalDevices
+    name: 127.0.0.1
+    data: 77
+    type: dword
+  vars:
+    ansible_become: yes # add data to SYSTEM's HKCU hive
+
+- name: DEPENDENCIES [DESKTOP-SESSION] RDP add credentials
+  community.windows.win_credential:
+    name: "TERMSRV/127.0.0.1"
+    username: "{{ ansible_user }}"
+    secret: "{{ ansible_password }}"
+    state: present
+    type: domain_password
+  vars:
+    ansible_become: yes
+
+- name: DEPENDENCIES [DESKTOP-SESSION] copy task files
+  ansible.windows.win_template:
+    src: ../templates/RestoreRDSession.{{item}}
+    dest: C:\RestoreRDSession.{{item}}
+    force: true
+  loop:
+    - ps1
+    - rdp
+    - xml
+    - txt
+
+- name: DEPENDENCIES [DESKTOP-SESSION] get restore session task status
+  community.windows.win_scheduled_task_stat:
+    name: RestoreRDSession
+  register: restore_session_task_info
+
+# 'win_scheduled_task' cannot set up 'SessionStateChange' trigger with 'RemoteDisconnect' property ==> using old method.
+- name: DEPENDENCIES [DESKTOP-SESSION] restore session task setup
+  ansible.windows.win_shell: SCHTASKS /CREATE /TN "RestoreRDSession" /RU "SYSTEM" /XML C:\RestoreRDSession.xml
+  when: restore_session_task_info.task_exists == false
+
+- name: DEPENDENCIES [DESKTOP-SESSION] restore session task enable
+  community.windows.win_scheduled_task:
+    name: RestoreRDSession
+    enabled: yes
+
+- name: DEPENDENCIES [DESKTOP-SESSION] restore session task run (+ WAIT 90 sec)
+  ansible.windows.win_shell: SCHTASKS /RUN /TN "RestoreRDSession"; Start-Sleep 90

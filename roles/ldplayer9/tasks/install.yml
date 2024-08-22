@@ -1,9 +1,9 @@
 ---
 
-- name: LDPLAYER [INSTALL] create download dir
-  ansible.windows.win_file:
-    path: "C:\\Users\\{{ ansible_user }}\\Downloads\\ldplayer\\{{ software.ldplayer.version }}"
-    state: directory
+# - name: LDPLAYER [INSTALL] create download dir
+#   ansible.windows.win_file:
+#     path: "C:\\Users\\{{ ansible_user }}\\Downloads\\ldplayer\\{{ software.ldplayer.version }}"
+#     state: directory
 
 # - name: LDPLAYER [INSTALL] download LDPlayer install files
 #   ansible.windows.win_shell: 'Invoke-WebRequest {{ proget_address }}/endpoints/emulator_images/content/ldplayer/{{ software.ldplayer.version }}/LDPlayer_{{ software.ldplayer.version }}.1.exe -Headers @{"AUTHORIZATION"="Basic " + [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes("{{ proget_creds }}"))} -OutFile C:\Users\{{ ansible_user }}\Downloads\ldplayer\{{ software.ldplayer.version }}\LDPlayer_{{ software.ldplayer.version }}.exe'

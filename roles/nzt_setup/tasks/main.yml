@@ -1,0 +1,108 @@
+---
+
+- name: "NZT SETUP: Download NZT apk"
+  ansible.windows.win_uri:
+    url: '{{ proget_url }}/download/NZT_APK/{{ nzt_apk_version }}?contentOnly=zip'
+    method: GET
+    dest: '{{ soft_dir }}\nztapk.{{ nzt_apk_version }}.zip'
+    headers:
+      Content-Type: application/zip
+      X-ApiKey: '{{ proget_api_key }}'
+
+- name: "NZT SETUP: Unzip nztapk archive"
+  community.windows.win_unzip:
+    src: '{{ soft_dir }}\nztapk.{{ nzt_apk_version }}.zip'
+    dest: '{{ soft_dir }}\nztapk.{{ nzt_apk_version }}'
+
+- name: "NZT SETUP: Remove nztapk archive"
+  ansible.windows.win_file:
+    path: '{{ soft_dir }}\nztapk.{{ nzt_apk_version }}.zip'
+    state: absent
+
+- name: "NZT SETUP: Find files in path nzt"
+  ansible.windows.win_find:
+    paths: '{{ soft_dir }}\nztapk.{{ nzt_apk_version }}'
+  register: out
+
+- name: "NZT SETUP: Get filename nzt"
+  ansible.builtin.debug:
+    msg: '{{ out.files[0].path }}'
+  register: nztapk_path
+
+- name: "NZT SETUP: Find emulator config files"
+  ansible.windows.win_find:
+    paths: "{{ software.ldplayer.installation_path }}\\vms\\config"
+  register: found_files
+
+- name: "NZT SETUP: Extract and verify numbers from file names"
+  set_fact:
+    emulator_numbers: "{{ emulator_numbers | default([]) + [item | regex_replace('^.+leidian(\\d+)\\.config$', '\\1')] }}"
+  loop: "{{ found_files.files | map(attribute='path') | list }}"
+
+- name: "NZT SETUP: Validate emulator numbers are numeric"
+  set_fact:
+    emulator_numbers: "{{ emulator_numbers | select('match', '^\\d+$') | map('int') | list }}"
+
+- name: Show emulator numbers
+  ansible.builtin.debug:
+    var: emulator_numbers
+
+- name: "NZT SETUP: Copy ps1 file"
+  ansible.windows.win_template:
+    src: 'setup_ldp9_for_nzt.ps1'
+    dest: 'C:\setup_ldp9_for_nzt.ps1'
+
+- name: "NZT SETUP: Set Execution Policy to Bypass"
+  win_regedit:
+    path: HKLM:\SOFTWARE\Microsoft\PowerShell\1\ShellIds\Microsoft.PowerShell
+    name: ExecutionPolicy
+    data: "Bypass"
+    type: string
+    state: present
+
+- name: "NZT SETUP: Create scheduled task for script"
+  community.windows.win_scheduled_task:
+    name: LDPlayer-Setup-location
+    description: LDPlayer-Setup-location
+    actions:
+      - path: 'C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe'
+        arguments: 'C:\setup_ldp9_for_nzt.ps1'
+    logon_type: interactive_token
+    restart_count: 2
+    restart_interval: PT4M
+    username: "administrator"
+    state: present
+    enabled: yes
+    become: true
+    become_user: administrator
+
+- name: "NZT SETUP: Start LDPlayer-Setup-location"
+  ansible.windows.win_shell: schtasks /run /tn "LDPlayer-Setup-location"
+  become: true
+  become_user: administrator
+
+- name: "NZT SETUP: Waits until setup finishes"
+  ansible.windows.win_wait_for:
+    path: 'C:\log_setup_nzt.txt'
+    regex: (.+)End of setup
+    delay: 20
+    timeout: 2000
+  register: wait
+  ignore_errors: True
+
+- name: "NZT SETUP: Ensure that setup is finished"
+  community.windows.win_lineinfile:
+    path: 'C:\\log_setup_nzt.txt'
+    regexp: '(.+)End of setup'
+    state: absent
+  check_mode: yes
+  changed_when: false
+  register: out
+
+- debug:
+    msg: "Setup is finished successfully"
+  when: out.found
+
+- debug:
+    msg: "Setup is failed"
+  when: not out.found

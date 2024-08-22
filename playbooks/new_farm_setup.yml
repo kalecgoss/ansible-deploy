@@ -6,4 +6,6 @@
     #  - { role: 'roles/openssh',                     tags: ['openssh'] }
      - { role: 'roles/win_common_setup',            tags: ['win_common_setup'] }
      - { role: 'roles/dependencies',                tags: ['dependencies'] }
+     - { role: 'roles/desktop_session',             tags: ['desktop_session'] }
      - { role: 'roles/ldplayer9',                   tags: ['ldplayer9'] }
+     - { role: 'roles/nzt_setup',                   tags: ['nzt_setup'] }
