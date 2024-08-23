@@ -62,7 +62,7 @@
           data: 'PreferOff'
         - desc: 'Change password'
           name: 'Password'
-          data: '50326100004e201f48f13e14fbb9c26fa6a44b1ce53db17cc3e6763324bf48521db8e97b58ae027cac8e82862ba9387b7d85c670e39a75f5a69f93ff2e7f2859f758255fea59aec3c62d034dd5158d7b3e872268b8091e'
+          data: '50326100004e201b6e90120261fb8e26c873904b51a81cbaf6188866b38a0acc4bde05c67588b7e6e87276e51704f01f040deb5974894412c016d84eee1f4c3885023d9345bd18ceb3e478cff12cdb3406d2e45ff8e452'
       loop_control:
         loop_var: reg
         label: '{{ reg.desc }}'
